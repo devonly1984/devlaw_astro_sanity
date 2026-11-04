@@ -1,0 +1,62 @@
+---
+import { Button } from "../ui/button";
+import { quickMenu } from "@/lib/quickMenu";
+---
+
+<footer class="bg-secondary relative mt-20 pt-20 pb-8">
+  <div class="container">
+    <div class="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 lg:mb-12">
+      <!--Column 1 -->
+      <div class="mb-8 md:mb-0">
+        <h3 class="text-300 font-500 mb-4 capitalize">StayLite Hotel</h3>
+        <p class="mb-4">
+          StayLite Hotel is a luxurious hotel located in the heart of the
+          city. We offer a wide range of rooms and suites.
+        </p>
+        <a
+          href="/"
+          class="hover:text-primary transition-colors duration-300 ease-in-out"
+        >
+          <Button className="font-600">Get Started </Button></a
+        >
+      </div>
+      <!--Column 2 -->
+      <div class="mb-8 md:mb-0 md:justify-self-end lg:translate-x-12">
+        <h3 class="text-300 font-500 mb-4 capitalize">quick menu</h3>
+        {
+          quickMenu.slice(0, 3).map((item) => (
+            <li class="mb-2 list-none li:last-child:mb-0">
+              <a
+                href={item.href}
+                class="hover:text-primary transition-colors duration-300 ease-in-out"
+              >
+                {item.name}
+              </a>
+            </li>
+          ))
+        }
+      </div>
+      <!--Column 3 -->
+      <div class="mb-8 md:mb-0 md:justify-self-center lg:translate-x-24">
+        <h3 class="text-300 font-500 mb-4 capitalize">other links</h3>
+        {
+          quickMenu.slice(3).map((item) => (
+            <li class="mb-2 list-none li:last-child:mb-0">
+              <a
+                href={item.href}
+                class="hover:text-primary transition-colors duration-300 ease-in-out"
+              >
+                {item.name}
+              </a>
+            </li>
+          ))
+        }
+      </div>
+    </div>
+    <div class="pt-12 text-center">
+      <p>
+        Copyright &copy; {new Date().getFullYear()} All Rights Reserved
+      </p>
+    </div>
+  </div>
+</footer>
