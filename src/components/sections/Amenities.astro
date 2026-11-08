@@ -1,0 +1,28 @@
+---
+import AmenitiesCard from "@/components/cards/AmenitiesCard.astro";
+import { amenities } from "@/lib/amenities";
+---
+
+<section class="pt-28">
+  <div class="container">
+    <div class="text-center mb-8">
+      <h2 class="mb-1 text-500 font-600 md:text-600">Amenities</h2>
+      <p class="md:text-lg text-muted-foreground">
+        Enjoy our premium facilities designed for your comfort and
+        convenience.
+      </p>
+    </div>
+    <div
+      class="md:grid md:grid-cols-2 md:space-y-0 md:gap-4 lg:grid-cols-4 space-y-6"
+    >
+      {
+        amenities.map((amenity) => (
+          <AmenitiesCard
+            name={amenity.name}
+            description={amenity.description}
+          />
+        ))
+      }
+    </div>
+  </div>
+</section>

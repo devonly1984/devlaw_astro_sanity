@@ -1,0 +1,32 @@
+---
+import {
+  DumbbellIcon,
+  UtensilsIcon,
+  WavesLadderIcon,
+  WifiIcon,
+} from "lucide-react";
+
+const { name, description } = Astro.props;
+---
+
+<div
+  class="flex flex-col items-center justify-center rounded-lg border p-4 text-center"
+>
+  <div
+    class="bg-primary mb-4 flex size-12 items-center justify-center rounded-full"
+  >
+    {
+      name === "High Speed Wifi" ? (
+        <WifiIcon className="size-6 text-white" />
+      ) : name === "Fine Dining" ? (
+        <UtensilsIcon className="size-6 text-white" />
+      ) : name === "Spa & Wellness" ? (
+        <DumbbellIcon className="size-6 text-white" />
+      ) : name === "Swimming Pool" ? (
+        <WavesLadderIcon className="size-6 text-white" />
+      ) : null
+    }
+  </div>
+  <h3 class="mb-4 text-lg font-bold">{name}</h3>
+  <p class="text-muted-foreground">{description}</p>
+</div>

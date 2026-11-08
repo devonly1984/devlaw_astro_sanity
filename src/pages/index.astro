@@ -1,8 +1,11 @@
 ---
 import Layout from "@/components/layout/Layout.astro";
-import Hero from "@/components/layout/sections/Hero.astro";
-import Welcome from "@/components/layout/sections/Welcome.astro";
-import CategorySection from "@/components/layout/sections/Category.astro";
+import Hero from "@/components/sections/Hero.astro";
+import Welcome from "@/components/sections/Welcome.astro";
+import Category from "@/components/sections/Category.astro";
+import Amenities from "@/components/sections/Amenities.astro";
+import Dining from "@/components/sections/Dining.astro";
+import CTA from "@/components/sections/CTA.astro";
 ---
 
 <Layout title="Home" description="Welcome to our website!">
@@ -13,5 +16,13 @@ import CategorySection from "@/components/layout/sections/Category.astro";
   <Welcome />
 
   <!--Category Section -->
-  <CategorySection />
+  <Category />
+
+  <!--Amenities Section -->
+  <Amenities />
+  <!--Dining Section -->
+  <Dining />
+  <!--CTA Section -->
+  <CTA />
+  
 </Layout>

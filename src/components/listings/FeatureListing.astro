@@ -1,0 +1,23 @@
+---
+import type { Feature } from "@/lib/types";
+import { Camera, HotelIcon, RulerIcon } from "lucide-react";
+
+const { room } = Astro.props;
+---
+
+<div class="flex flex-wrap items-center justify-center gap-4">
+  {
+    room.features.map((feature: Feature) => (
+      <div class="flex items-center justify-center gap-2">
+        {feature.icon === "bed" && <HotelIcon className="text-primary" />}
+        {feature.icon === "ruler" && (
+          <RulerIcon className="text-primary" />
+        )}
+        {feature.icon === "camera" && <Camera className="'text-primary" />}
+        <p class="">
+          {feature.name}: <strong>{feature.value}</strong>
+        </p>
+      </div>
+    ))
+  }
+</div>

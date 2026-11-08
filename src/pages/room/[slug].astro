@@ -1,0 +1,113 @@
+---
+import Layout from "../../components/layout/Layout.astro";
+import { rooms } from "../../lib/constants";
+import { Image } from "astro:assets";
+import AmenityListing from "@/components/listings/AmenityListing.astro";
+import FeatureListing from "@/components/listings/FeatureListing.astro";
+import Reservation from "@/components/forms/Reservation";
+export const getStaticPaths = () => {
+  return rooms.map(({ slug }) => {
+    return {
+      params: { slug },
+    };
+  });
+};
+const { slug } = Astro.params;
+
+if (slug === undefined) {
+  throw new Error("Slug is required");
+}
+const room = rooms.find((room) => room.slug === slug);
+if (room === undefined) {
+  throw new Error("Room not found");
+}
+---
+
+<Layout title={room.name}>
+  <div class="container pt-30">
+    <div class="mb-8 text-center">
+      <h1 class="text-400 font-600 mb-4">{room.name}</h1>
+      <FeatureListing room={room} />
+    </div>
+    <div class="">
+      <div class="">
+        <Image
+          id="mainImage"
+          class={`h-125 rounded-lg object-cover`}
+          src={room.image}
+          alt={room.name}
+        />
+      </div>
+      {
+        room.thumbnails && room.thumbnails.length > 0 && (
+          <div class="mt-4 flex items-center justify-center gap-4 overflow-x-auto pb-2">
+            <div
+              class="thumbnail-item border-primary size-20 cursor-pointer overflow-hidden rounded-md border-2"
+              data-index="main"
+            >
+              <Image
+                class={`h-full w-full rounded-lg object-cover`}
+                src={room.image}
+                alt={`${room.name} - main`}
+              />
+            </div>
+            {room.thumbnails.map((thumbnail, idx) => (
+              <div
+                class="thumbnail-item size-20 cursor-pointer overflow-hidden rounded-md border-2 hover:border-primary"
+                data-index={idx}
+              >
+                <Image
+                  class={`h-full w-full rounded-lg object-cover`}
+                  src={thumbnail}
+                  alt={`${room.name} - thumbnail ${idx + 1}`}
+                />
+              </div>
+            ))}
+          </div>
+        )
+      }
+    </div>
+    <div class="mt-16 md:grid md:grid-cols-2 md:gap-8">
+      <div class="">
+        <div class="mb-8">
+          <h3 class="text-300 font-600 mb-4">Description</h3>
+          <p>{room.description}</p>
+        </div>
+        <AmenityListing room={room} />
+        <div class="">
+          <h3 class="text-300 font-600 mb-4">Customer Reviews</h3>
+          <p class="">Be the first to leave a review by booking a room!</p>
+        </div>
+      </div>
+      <div class="">
+        <Reservation client:load room={room} />
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const mainImage = document.getElementById("mainImage");
+    const thumbnails = document.querySelectorAll(".thumbnail-item");
+    if (mainImage && thumbnails.length > 0) {
+      const originalMainSrc = mainImage.getAttribute("src") || "";
+      thumbnails.forEach((thumbnail) => {
+        thumbnail.addEventListener("click", () => {
+          thumbnails.forEach((t) => t.classList.remove("border-primary"));
+          thumbnail.classList.add("border-primary");
+          const index = thumbnail.getAttribute("data-index");
+          if (index === "main") {
+            mainImage.setAttribute("src", originalMainSrc);
+          } else {
+            const thumbnailImg = thumbnail.querySelector("img");
+            if (thumbnailImg) {
+              const thumnailSrc = thumbnailImg.getAttribute("src") || "";
+              mainImage.setAttribute("src", thumnailSrc);
+            }
+          }
+        });
+      });
+    }
+  });
+</script>
