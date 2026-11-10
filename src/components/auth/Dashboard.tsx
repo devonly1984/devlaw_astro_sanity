@@ -2,6 +2,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useStore } from "@nanostores/react";
 import { $userStore } from "@clerk/astro/client";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { SignOutButton } from "@clerk/astro/react";
 const Dashboard = () => {
     const user = useStore($userStore);
     if (!user) return null;
@@ -18,17 +19,29 @@ const Dashboard = () => {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          className="translate-y-1 md:translate-y-0"
-          asChild
-        >
+        <DropdownMenuTrigger asChild>
           <Avatar className="size-8 translate-y-1 md:translate-y-0">
             <AvatarImage src={user.imageUrl} className="cursor-pointer" />
             <AvatarFallback>{getUserInitials()}</AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="mt-5" align="end">
-          
+        <DropdownMenuContent className="mt-4 w-42.5" align="center">
+          <DropdownMenuItem className="block w-fullcursor-pointer focus:bg-primary">
+            <a href="account" className="w-full">
+              Account
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="block w-full cursor-pointer focus:bg-primary">
+            <a href="bookings" className="w-full">
+              Bookings
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="block w-fullcursor-pointer focus:bg-primary">
+            <SignOutButton
+              redirectUrl={window.location.href}
+              children="Logout"
+            />
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
