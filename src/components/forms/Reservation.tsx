@@ -1,4 +1,4 @@
-import type { Room } from "@/lib/types";
+import type { Room } from "../../../sanity.types";
 import { cn, formatPrice, getNumberofDays } from "@/lib/utils";
 import { useState, type ChangeEvent } from "react";
 import { Label } from "../ui/label";
@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Input } from "../ui/input";
+import { useAuth } from "@clerk/astro/react";
+import { toast } from "sonner";
 interface ReservationProps {
   room: Room;
 }
@@ -27,15 +29,17 @@ interface BookingData {
   children: number;
 }
 const Reservation = ({ room }: ReservationProps) => {
+  const { userId } = useAuth();
+
   const [bookingData, setBookingData] = useState<BookingData>({
     checkIn: undefined,
     checkOut: undefined,
-    roomCategory: room.category,
+    roomCategory: room.category ?? "",
     noOfRooms: 1,
     adults: 1,
     children: 0,
   });
-  const handleCheckOutChange = (date: Date | undefined) => {
+  const handleCheckOutChange = async (date: Date | undefined) => {
     if (!date) {
       setBookingData((prev) => ({
         ...prev,
@@ -59,6 +63,31 @@ const Reservation = ({ room }: ReservationProps) => {
       ...prev,
       checkOut: UTCDate,
     }));
+    if (bookingData.checkIn) {
+      try {
+        const response = await fetch("/api/checkAvailability", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            roomId: room._id,
+            checkIn: bookingData.checkIn,
+            checkOut: UTCDate.toISOString(),
+          }),
+        });
+        const data = await response.json();
+        if (!data.available) {
+          toast.error("Room is not available for selected dates");
+          setBookingData((prev) => ({
+            ...prev,
+            checkOut: undefined,
+          }));
+        }
+      } catch (error) {
+        console.log("Error checking availability", error);
+      }
+    }
   };
   const handleCheckInChange = (date: Date | undefined) => {
     if (!date) {
@@ -98,8 +127,8 @@ const Reservation = ({ room }: ReservationProps) => {
   );
 
   const totalPrice =
-    room.price * bookingData.noOfRooms * (numberOfDays ?? 0);
-  const discountPrice = totalPrice * (room.discount / 100);
+    (room.price ?? 0) * bookingData.noOfRooms * (numberOfDays ?? 0);
+  const discountPrice = totalPrice * ((room.discount ?? 0) / 100);
   const totalPriceWithDiscount = totalPrice - discountPrice;
   return (
     <section className="mt-10 md:mt-0">
@@ -109,7 +138,9 @@ const Reservation = ({ room }: ReservationProps) => {
       >
         <div className="relative mb-4 flex items-center justify-between after:bg-primary after:absolute after:bottom-0.5 after:h-0.75 after:w-full after:content-[' ']">
           <h5 className="font-500 text-300">Reserve:</h5>
-          <p className="text-300 font-600">{formatPrice(room.price)}</p>
+          <p className="text-300 font-600">
+            {formatPrice(room.price ?? 0)}
+          </p>
         </div>
         <p className="mb-6">
           The check-in time is at 12:00PM, and the checkout time is at
@@ -195,8 +226,8 @@ const Reservation = ({ room }: ReservationProps) => {
                   placeholder={room.category}
                 />
                 <SelectContent>
-                  <SelectItem value={room.category}>
-                    {room.category}
+                  <SelectItem value={room.category ?? ""}>
+                    {room.category ?? ""}
                   </SelectItem>
                 </SelectContent>
               </SelectTrigger>
@@ -241,7 +272,7 @@ const Reservation = ({ room }: ReservationProps) => {
         </div>
         <div className="mt-8 flex items-center justify-between">
           <div className="flex items-center gap-2 ">
-            {room.discount > 0 && totalPrice > 0 ? (
+            {(room.discount ?? 0) > 0 && totalPrice > 0 ? (
               <>
                 <p className="font-600 line-through text-200">
                   {formatPrice(totalPrice)}

@@ -15,6 +15,41 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: schema.json
+export type UserReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "user";
+};
+
+export type RoomReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "room";
+};
+
+export type Booking = {
+  _id: string;
+  _type: "booking";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  reservationId?: string;
+  user?: UserReference;
+  room?: RoomReference;
+  checkIn?: string;
+  checkOut?: string;
+  noOfRoom?: number;
+  adults?: number;
+  children?: number;
+  totalPrice?: number;
+  status?: "pending" | "confirmed" | "checked-in" | "checked-out" | "cancelled";
+  paymentStatus?: "pending" | "paid" | "failed";
+  paymentId?: string;
+  createdAt?: string;
+};
+
 export type SanityImageAssetReference = {
   _ref: string;
   _type: "reference";
@@ -200,6 +235,9 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
+  | UserReference
+  | RoomReference
+  | Booking
   | SanityImageAssetReference
   | Room
   | SanityImageCrop
@@ -214,3 +252,100 @@ export type AllSanitySchemaTypes =
   | SanityAssetSourceData
   | SanityImageAsset
   | Geopoint;
+
+// Source: src/lib/queries/bookingQuery.ts
+// Variable: bookingQuery
+// Query: *[_type=='booking' && room.ref==$roomId && status in ['pending','confirmed','check_in'] && checkIn <=$checkOut && checkOut >=$checkIn]
+export type BookingQueryResult = Array<{
+  _id: string;
+  _type: "booking";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  reservationId?: string;
+  user?: UserReference;
+  room?: RoomReference;
+  checkIn?: string;
+  checkOut?: string;
+  noOfRoom?: number;
+  adults?: number;
+  children?: number;
+  totalPrice?: number;
+  status?: "cancelled" | "checked-in" | "checked-out" | "confirmed" | "pending";
+  paymentStatus?: "failed" | "paid" | "pending";
+  paymentId?: string;
+  createdAt?: string;
+}>;
+
+// Source: src/lib/queries/roomQuery.ts
+// Variable: fetchRoomsQuery
+// Query: *[_type == $type && category == $category && isAvailable == $isAvailable] {    "slug": slug.current,    name,    description,    category,    image,    price,    discount,    thumbnailImgs  }
+export type FetchRoomsQueryResult = Array<
+  | {
+      slug: null;
+      name: null;
+      description: null;
+      category: null;
+      image: null;
+      price: null;
+      discount: null;
+      thumbnailImgs: null;
+    }
+  | {
+      slug: null;
+      name: string | null;
+      description: null;
+      category: null;
+      image: string | null;
+      price: null;
+      discount: null;
+      thumbnailImgs: null;
+    }
+  | {
+      slug: null;
+      name: null;
+      description: string | null;
+      category: null;
+      image: null;
+      price: null;
+      discount: null;
+      thumbnailImgs: null;
+    }
+  | {
+      slug: string | null;
+      name: string | null;
+      description: string | null;
+      category: "deluxe-suite" | "executive-suite" | "luxury-suite" | null;
+      image: {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt?: string;
+        _type: "image";
+      } | null;
+      price: number | null;
+      discount: number | null;
+      thumbnailImgs: Array<{
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt?: string;
+        _type: "image";
+        _key: string;
+      }> | null;
+    }
+>;
+
+// Query TypeMap
+declare global {
+  interface SanityQueries {
+    "*[_type=='booking' && room.ref==$roomId && status in ['pending','confirmed','check_in'] && checkIn <=$checkOut && checkOut >=$checkIn]": BookingQueryResult;
+    '*[_type == $type && category == $category && isAvailable == $isAvailable] {\n    "slug": slug.current,\n    name,\n    description,\n    category,\n    image,\n    price,\n    discount,\n    thumbnailImgs\n  }': FetchRoomsQueryResult;
+  }
+}
+// Lets @sanity/client releases that predate the global registry read it too
+declare module "@sanity/client" {
+  interface SanityQueries extends globalThis.SanityQueries {}
+}

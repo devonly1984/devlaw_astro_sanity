@@ -11,7 +11,7 @@ const RoomListing = ({ room }: RoomListingProps) => {
     <div className="mb-8 md:mb-0">
       <div className="group">
         <a
-          href={`/room/${room.slug}`}
+          href={`/rooms/${room.slug}`}
           className="relative overflow-hidden"
         >
           <EyeIcon
