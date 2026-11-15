@@ -1,6 +1,7 @@
-import type { Room } from "@/lib/types";
+import type { Room } from "../../../sanity.types";
 import { EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { urlForImage } from "@/lib/url-for-image";
 interface RoomListingProps {
   room: Room;
 }
@@ -19,7 +20,7 @@ const RoomListing = ({ room }: RoomListingProps) => {
           />
           <div className="absolute left-0 top-0 h-full w-full bg-black opacity-0 transition-opacity duration-300 group-hover:opacity-60"></div>
           <img
-            src={room.image.src}
+            src={urlForImage(room.image!).url()}
             alt={room.name}
             className="rounded-tr-xl rounded-tl-xl"
           />

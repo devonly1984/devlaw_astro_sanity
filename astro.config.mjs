@@ -1,11 +1,9 @@
 // @ts-check
 import { defineConfig, envField } from 'astro/config';
-
 import tailwindcss from '@tailwindcss/vite';
 import clerk from '@clerk/astro'
 import react from '@astrojs/react';
 import netlify from '@astrojs/netlify';
-import node from '@astrojs/node';
 import sanity from '@sanity/astro';
 
 // https://astro.build/config
@@ -15,12 +13,10 @@ export default defineConfig({
       PUBLIC_CLERK_PUBLISHABLE_KEY: envField.string({
         context: "client",
         access: "public",
-        optional: true,
       }),
       CLERK_SECRET_KEY: envField.string({
         context: "server",
         access: "secret",
-        optional: true,
       }),
       SANITY_PROJECT_ID: envField.string({
         context: "client",
@@ -69,6 +65,6 @@ export default defineConfig({
       studioBasePath: "/admin",
     }),
   ],
-  adapter: node({ mode: "standalone" }),
+  adapter: netlify(),
   output: "server",
 });

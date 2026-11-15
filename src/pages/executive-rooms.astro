@@ -1,11 +1,11 @@
 ---
 import Layout from "@/components/layout/Layout.astro";
-import { rooms } from "@/lib/constants";
+
 import { Image } from "astro:assets";
 import ExecutiveImg from "@/assets/executive.webp";
 import RoomListing from "@/components/listings/RoomListing";
-const filteredRooms =
-  rooms.filter((room) => room.category === "executive-suite") || [];
+import { fetchRooms } from "@/lib/queries/roomQuery";
+const rooms = await fetchRooms('room','executive-suite',true)
 ---
 
 <Layout title="Executive Rooms">
@@ -34,7 +34,7 @@ const filteredRooms =
   <div class="container pt-28">
     <div class="md:grid md:gap-9 md:grid-cols-2 lg:grid-cols-3">
       {
-        filteredRooms.map((room) => (
+        rooms.map((room) => (
           <RoomListing room={room} client:load />
         ))
       }

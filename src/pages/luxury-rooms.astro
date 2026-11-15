@@ -1,11 +1,13 @@
 ---
 import Layout from "@/components/layout/Layout.astro";
-import { rooms } from "@/lib/constants";
+
 import { Image } from "astro:assets";
 import LuxuryImg from "@/assets/luxury.webp";
 import RoomListing from "@/components/listings/RoomListing";
-const filteredRooms =
-  rooms.filter((room) => room.category === "luxury-suite") || [];
+import { fetchRooms } from "@/lib/queries/roomQuery";
+import type {Room} from '../../sanity.types'
+
+  const rooms = await fetchRooms('room','luxury-suite',true)
 ---
 
 <Layout title="Luxury Rooms">
@@ -34,7 +36,7 @@ const filteredRooms =
   <div class="container pt-28">
     <div class="md:grid md:gap-9 md:grid-cols-2 lg:grid-cols-3">
       {
-        filteredRooms.map((room) => (
+        rooms.map((room:Room) => (
           <RoomListing room={room} client:load />
         ))
       }

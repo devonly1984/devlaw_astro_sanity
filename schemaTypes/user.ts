@@ -18,7 +18,10 @@ export default {
         { name: "email",
             title: "Email",
              type: "string",
-            readOnly: true
+            readOnly: true,
+            options: {
+                disable: true
+            }
         },
         { name: "image",
             title: "Image Url",
