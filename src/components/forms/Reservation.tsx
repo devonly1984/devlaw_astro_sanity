@@ -1,5 +1,5 @@
 import type { Room } from "../../../sanity.types";
-import { cn, formatPrice, getNumberofDays } from "@/lib/utils";
+import { cn, formatPrice, generateRandomReservationId, getNumberofDays } from "@/lib/utils";
 import { useState, type ChangeEvent } from "react";
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -130,24 +130,69 @@ const Reservation = ({ room }: ReservationProps) => {
     (room.price ?? 0) * bookingData.noOfRooms * (numberOfDays ?? 0);
   const discountPrice = totalPrice * ((room.discount ?? 0) / 100);
   const totalPriceWithDiscount = totalPrice - discountPrice;
+
+  const handleSubmit  = async (e:ChangeEvent<HTMLFormElement>)=>{
+    e.preventDefault();
+    if (!userId) {
+      toast.error("Please login to book a room");
+      return;
+    }
+   
+
+    try { 
+      if (!bookingData.checkIn || !bookingData.checkOut) {
+        toast.error("Please select check-in and check-out dates");
+        return;
+      }
+       const reservationId = generateRandomReservationId();
+    const bookingDetails = {
+      ...bookingData,
+      userBookingId: userId,
+      reservationId,
+      roomName: room.name,
+      roomId: room._id,
+      image: room.image,
+      totalPrice: totalPriceWithDiscount,
+
+    };
+    const response = await fetch("api/createCheckoutSession", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(bookingDetails),
+    });
+    console.log("Response", response.json());
+    if (!response.ok) {
+      throw new Error("Failed to create checkout session");
+    }
+    const {url} = await response.json();
+    window.location.href = url;
+
+    } catch(error){
+      toast.error("Error booking room");  
+    }
+  }
   return (
     <section className="mt-10 md:mt-0">
-      <form
-        onSubmit={() => {}}
-        className="bg-card-foreground text-background rounded-lg px-6 pt-8 pb-6"
-      >
+      <div className="bg-card-foreground text-background rounded-lg px-6 pt-8 pb-6">
         <div className="relative mb-4 flex items-center justify-between after:bg-primary after:absolute after:bottom-0.5 after:h-0.75 after:w-full after:content-[' ']">
           <h5 className="font-500 text-300">Reserve:</h5>
           <p className="text-300 font-600">
             {formatPrice(room.price ?? 0)}
           </p>
         </div>
+
         <p className="mb-6">
           The check-in time is at 12:00PM, and the checkout time is at
           11:59AM. If you happen to forget your belongings, kindly get in
           touch with the receptionist.
         </p>
-        <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
+
+        <form
+          className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0"
+          onSubmit={handleSubmit}
+        >
           <div className="">
             <Label className="mb-2">Check In</Label>
             <Popover>
@@ -269,34 +314,35 @@ const Reservation = ({ room }: ReservationProps) => {
               onChange={handleNumberChange}
             />
           </div>
-        </div>
-        <div className="mt-8 flex items-center justify-between">
-          <div className="flex items-center gap-2 ">
-            {(room.discount ?? 0) > 0 && totalPrice > 0 ? (
-              <>
-                <p className="font-600 line-through text-200">
-                  {formatPrice(totalPrice)}
-                </p>
-                <p className="font-600 text-200">
-                  {formatPrice(totalPriceWithDiscount)}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="font-600 text-200">
-                  {formatPrice(totalPriceWithDiscount)}
-                </p>
-              </>
-            )}
+
+          <div className="mt-8 flex items-center justify-between">
+            <div className="flex items-center gap-2 ">
+              {(room.discount ?? 0) > 0 && totalPrice > 0 ? (
+                <>
+                  <p className="font-600 line-through text-200">
+                    {formatPrice(totalPrice)}
+                  </p>
+                  <p className="font-600 text-200">
+                    {formatPrice(totalPriceWithDiscount)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-600 text-200">
+                    {formatPrice(totalPriceWithDiscount)}
+                  </p>
+                </>
+              )}
+            </div>
+            <p className="text-200 font-600">
+              Applied {room.discount}% discount
+            </p>
           </div>
-          <p className="text-200 font-600">
-            Applied {room.discount}% discount
-          </p>
-        </div>
-        <Button className="mt-8 w-full" type="submit">
-          Book Now
-        </Button>
-      </form>
+          <Button className="mt-8 w-full" type="submit">
+            Book Now
+          </Button>
+        </form>
+      </div>
     </section>
   );
 };

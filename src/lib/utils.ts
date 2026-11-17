@@ -15,3 +15,9 @@ export const getNumberofDays=(startDate:Date|undefined, endDate:Date|undefined)=
   const daysDifference = timeDifference / (1000 * 3600 * 24);
   return Math.ceil(daysDifference)
  }
+
+ export const generateRandomReservationId = ()=>{
+     const randomId = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+     return `RES-${randomId}`;
+
+ }
