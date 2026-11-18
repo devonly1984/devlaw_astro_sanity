@@ -1,11 +1,16 @@
 import type { Room } from "../../../sanity.types";
-import { cn, formatPrice, generateRandomReservationId, getNumberofDays } from "@/lib/utils";
+import {
+  cn,
+  formatPrice,
+  generateRandomReservationId,
+  getNumberofDays,
+} from "@/lib/utils";
 import { useState, type ChangeEvent } from "react";
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import {
   Select,
@@ -30,6 +35,7 @@ interface BookingData {
 }
 const Reservation = ({ room }: ReservationProps) => {
   const { userId } = useAuth();
+  
 
   const [bookingData, setBookingData] = useState<BookingData>({
     checkIn: undefined,
@@ -39,6 +45,9 @@ const Reservation = ({ room }: ReservationProps) => {
     adults: 1,
     children: 0,
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleCheckOutChange = async (date: Date | undefined) => {
     if (!date) {
       setBookingData((prev) => ({
@@ -61,7 +70,7 @@ const Reservation = ({ room }: ReservationProps) => {
     );
     setBookingData((prev) => ({
       ...prev,
-      checkOut: UTCDate,
+      checkOut: date,
     }));
     if (bookingData.checkIn) {
       try {
@@ -109,9 +118,11 @@ const Reservation = ({ room }: ReservationProps) => {
         0,
       ),
     );
+    console.log("DAte", date);
+
     setBookingData((prev) => ({
       ...prev,
-      checkIn: UTCDate,
+      checkIn: date,
     }));
   };
   const handleNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -131,48 +142,50 @@ const Reservation = ({ room }: ReservationProps) => {
   const discountPrice = totalPrice * ((room.discount ?? 0) / 100);
   const totalPriceWithDiscount = totalPrice - discountPrice;
 
-  const handleSubmit  = async (e:ChangeEvent<HTMLFormElement>)=>{
+  const handleSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!userId) {
       toast.error("Please login to book a room");
       return;
     }
-   
 
-    try { 
+    try {
+      setIsLoading(true);
+
       if (!bookingData.checkIn || !bookingData.checkOut) {
         toast.error("Please select check-in and check-out dates");
         return;
       }
-       const reservationId = generateRandomReservationId();
-    const bookingDetails = {
-      ...bookingData,
-      userBookingId: userId,
-      reservationId,
-      roomName: room.name,
-      roomId: room._id,
-      image: room.image,
-      totalPrice: totalPriceWithDiscount,
-
-    };
-    const response = await fetch("api/createCheckoutSession", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(bookingDetails),
-    });
-    console.log("Response", response.json());
-    if (!response.ok) {
-      throw new Error("Failed to create checkout session");
+      const reservationId = generateRandomReservationId();
+      const bookingDetails = {
+        ...bookingData,
+        userBookingId: userId,
+        reservationId,
+        roomName: room.name,
+        roomId: room._id,
+        image: room.image,
+        totalPrice: totalPriceWithDiscount,
+      };
+      
+      const response = await fetch("/api/createCheckoutSession", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bookingDetails),
+      });
+      console.log("Response", response.json());
+      if (!response.ok) {
+        throw new Error("Failed to create checkout session");
+      }
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      toast.error("Error booking room");
+    } finally {
+      setIsLoading(false);
     }
-    const {url} = await response.json();
-    window.location.href = url;
-
-    } catch(error){
-      toast.error("Error booking room");  
-    }
-  }
+  };
   return (
     <section className="mt-10 md:mt-0">
       <div className="bg-card-foreground text-background rounded-lg px-6 pt-8 pb-6">
@@ -329,17 +342,30 @@ const Reservation = ({ room }: ReservationProps) => {
               ) : (
                 <>
                   <p className="font-600 text-200">
-                    {formatPrice(totalPriceWithDiscount)}
+                    {formatPrice(totalPrice)}
                   </p>
                 </>
               )}
             </div>
-            <p className="text-200 font-600">
-              Applied {room.discount}% discount
-            </p>
+            {(room.discount ?? 0) > 0 && (
+              <p className="text-200 font-600">
+                Applied {room.discount}% discount
+              </p>
+            )}
           </div>
-          <Button className="mt-8 w-full" type="submit">
-            Book Now
+          <Button
+            className="mt-8 w-full"
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                <p>"Booking..."</p>
+              </div>
+            ) : (
+              "Book Now"
+            )}
           </Button>
         </form>
       </div>

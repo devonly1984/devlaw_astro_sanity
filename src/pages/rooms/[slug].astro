@@ -1,65 +1,75 @@
 ---
 import Layout from "../../components/layout/Layout.astro";
-import { rooms } from "../../lib/constants";
+//import { rooms } from "../../lib/constants";
 import { Image } from "astro:assets";
 import AmenityListing from "@/components/listings/AmenityListing.astro";
 import FeatureListing from "@/components/listings/FeatureListing.astro";
 import Reservation from "@/components/forms/Reservation";
-export const getStaticPaths = () => {
-  return rooms.map(({ slug }) => {
-    return {
-      params: { slug },
-    };
-  });
+import { fetchRooms } from "@/lib/queries/roomQuery";
+import type { Room } from "../../../sanity.types";
+import { urlForImage } from "@/lib/url-for-image";
+
+
+export const getStaticPaths = async () => {
+  const rooms: Room[] = await fetchRooms('luxury-suite','royal-room',true);
+  return rooms.map((room) => ({
+    params: { slug: room.slug },
+  }));
 };
 const { slug } = Astro.params;
-
+const rooms = await fetchRooms('luxury-suite','royal-room',true);
+const roomQuery = rooms.find((room) => room.slug === slug);
+console.log(rooms);
+debugger;
 if (slug === undefined) {
   throw new Error("Slug is required");
 }
-const room = rooms.find((room) => room.slug === slug);
-if (room === undefined) {
+
+
+
+
+if (roomQuery === undefined) {
   throw new Error("Room not found");
 }
 ---
 
-<Layout title={room.name}>
+<Layout title={roomQuery.name}>
   <div class="container pt-30">
     <div class="mb-8 text-center">
-      <h1 class="text-400 font-600 mb-4">{room.name}</h1>
-      <FeatureListing room={room} />
+      <h1 class="text-400 font-600 mb-4">{roomQuery.name}</h1>
+      <FeatureListing room={roomQuery} />
     </div>
     <div class="">
       <div class="">
-        <Image
+        <img
           id="mainImage"
           class={`h-125 rounded-lg object-cover`}
-          src={room.image}
-          alt={room.name}
+          src={urlForImage(roomQuery.image!).url()}
+          alt={roomQuery.name!}
         />
       </div>
       {
-        room.thumbnails && room.thumbnails.length > 0 && (
+        roomQuery.thumbnailImgs && roomQuery.thumbnailImgs.length > 0 && (
           <div class="mt-4 flex items-center justify-center gap-4 overflow-x-auto pb-2">
             <div
               class="thumbnail-item border-primary size-20 cursor-pointer overflow-hidden rounded-md border-2"
               data-index="main"
             >
-              <Image
+              <img
                 class={`h-full w-full rounded-lg object-cover`}
-                src={room.image}
-                alt={`${room.name} - main`}
+                src={urlForImage(roomQuery.image!).url()}
+                alt={`${roomQuery.name} - main`}
               />
             </div>
-            {room.thumbnails.map((thumbnail, idx) => (
+            {roomQuery.thumbnailImgs.map((thumbnail, idx) => (
               <div
                 class="thumbnail-item size-20 cursor-pointer overflow-hidden rounded-md border-2 hover:border-primary"
                 data-index={idx}
               >
-                <Image
+                <img
                   class={`h-full w-full rounded-lg object-cover`}
-                  src={thumbnail}
-                  alt={`${room.name} - thumbnail ${idx + 1}`}
+                  src={urlForImage(thumbnail).url()}
+                  alt={`${roomQuery.name} - thumbnail ${idx + 1}`}
                 />
               </div>
             ))}
@@ -71,16 +81,16 @@ if (room === undefined) {
       <div class="">
         <div class="mb-8">
           <h3 class="text-300 font-600 mb-4">Description</h3>
-          <p>{room.description}</p>
+          <p>{roomQuery.description}</p>
         </div>
-        <AmenityListing room={room} />
+        <AmenityListing room={roomQuery} />
         <div class="">
           <h3 class="text-300 font-600 mb-4">Customer Reviews</h3>
           <p class="">Be the first to leave a review by booking a room!</p>
         </div>
       </div>
       <div class="">
-        <Reservation client:load room={room} />
+        <Reservation client:load room={roomQuery} />
       </div>
     </div>
   </div>

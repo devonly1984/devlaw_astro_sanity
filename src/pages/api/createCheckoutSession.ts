@@ -39,10 +39,15 @@ export const POST: APIRoute = async ({ request }) => {
             }
 
         })
+        return new Response(JSON.stringify({ sessionId: session.id, url: session.url }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
 
 
 
-        return new Response(JSON.stringify({}), { status: 200, headers: { 'Content-Type': 'application/json' } });
     } catch (error) {
         return new Response(JSON.stringify({ error: 'Failed to create checkout session' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }

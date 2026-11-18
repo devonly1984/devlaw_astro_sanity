@@ -2,7 +2,7 @@ import { sanityClient } from "sanity:client"
 import type { Room } from "../../../sanity.types"
 import { defineQuery } from "groq"
 
-export const fetchRooms = async (type:string,category:string,isAvailable:boolean)=>{
+export const fetchRooms = async (type:string,category:string,isAvailable=true)=>{
 
   const fetchRoomsQuery = defineQuery(`*[_type == $type && category == $category && isAvailable == $isAvailable] {
     "slug": slug.current,
@@ -18,7 +18,7 @@ export const fetchRooms = async (type:string,category:string,isAvailable:boolean
   const query = await sanityClient.fetch<Room[]>(fetchRoomsQuery, {
     type,
     category,
-    isAvailable,
+    isAvailable
   })
 
   return query;
